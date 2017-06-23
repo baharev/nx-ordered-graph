@@ -1,18 +1,14 @@
-# Copyright (C) 2016 University of Vienna
+# Copyright (C) 2016, 2017 University of Vienna
 # All rights reserved.
 # BSD license.
 # Author: Ali Baharev <ali.baharev@gmail.com>
 from __future__ import print_function, division
-from collections import OrderedDict
 import os
-from hypothesis import given, Settings
+from hypothesis import given, settings
 from hypothesis.strategies import integers
-from networkx import DiGraph, gnm_random_graph
+from networkx import OrderedDiGraph, gnm_random_graph
 
-
-class OrderedGraph(DiGraph):
-    node_dict_factory = OrderedDict
-    adjlist_dict_factory = OrderedDict
+class MyOrderedDiGraph(OrderedDiGraph):
     
     #@profile
     def subgraph(self, nbunch):
@@ -29,8 +25,8 @@ class OrderedGraph(DiGraph):
         self_pred=self.pred
         # add nodes
         for n in H:
-            H_succ[n]=H.adjlist_dict_factory()
-            H_pred[n]=H.adjlist_dict_factory()
+            H_succ[n]=H.adjlist_inner_dict_factory()
+            H_pred[n]=H.adjlist_inner_dict_factory()
         # add successors
         for u in H_succ:
             Hnbrs=H_succ[u]
@@ -53,7 +49,7 @@ class OrderedGraph(DiGraph):
 def check_order(n, m, seed):
     g_rnd = gnm_random_graph(n, m, seed=seed, directed=True)
     
-    g_orig = OrderedGraph()
+    g_orig = MyOrderedDiGraph()
     g_orig.add_edges_from(g_rnd.edges())
     g_orig.add_nodes_from(g_rnd.nodes())
 
@@ -84,13 +80,19 @@ def main():
     
     decor = given(n    = integers(min_value=0, max_value=  MAX_VALUE),
                   m    = integers(min_value=0, max_value=5*MAX_VALUE), 
-                  seed = integers(min_value=0),
-                  settings = Settings(max_examples=MAX_EXAMP))
+                  seed = integers(min_value=1))
     
-    decor(check_order)()
+    func = decor(check_order)
+    decor = settings(max_examples=MAX_EXAMP)
+    func = decor(func)
+    func()
     
     print('Done!')
 
 
 if __name__ == '__main__':
+    import networkx
+    import hypothesis
+    print('networkx', networkx.__version__)
+    print('hypothesis', hypothesis.__version__)
     main()
