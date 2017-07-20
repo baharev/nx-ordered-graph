@@ -76,16 +76,13 @@ def main():
     os.environ['HYPOTHESIS_STORAGE_DIRECTORY'] = '/tmp/ht'
     
     MAX_VALUE = 30
-    MAX_EXAMP = 10000
     
-    decor = given(n    = integers(min_value=0, max_value=  MAX_VALUE),
-                  m    = integers(min_value=0, max_value=5*MAX_VALUE), 
-                  seed = integers(min_value=1))
-    
-    func = decor(check_order)
-    decor = settings(max_examples=MAX_EXAMP)
-    func = decor(func)
-    func()
+    with settings(max_examples=10000):
+        decor = given(n    = integers(min_value=0, max_value=  MAX_VALUE),
+                      m    = integers(min_value=0, max_value=5*MAX_VALUE), 
+                      seed = integers(min_value=1))
+        
+        decor(check_order)()
     
     print('Done!')
 
